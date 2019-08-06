@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Word Guess Game</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="text/javascript" href="assets/javascript/game.js">
+
+</head>
+<body>
+
+<!-- Header -->
+<div class="container" id="western-image">
+    <h1 id="game-header">Word Guess Game</h1>
+
+    <!-- Instructions -->
+    <p class="my-comments">Choose a category and guess the secret word(s).</p>
+
+    <!-- First row has Choose a Category button and empty div for comments to the user -->
+    <div class="container" style="padding-top:20px">
+        <div class="row justify-content-sm-center">
+
+            <!-- Choose a category button -->
+            <div class="col-sm-8">
+                <div class="container button-container">
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Choose a Category
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="cat-list">
+                            <a class="dropdown-item" href="#" id="0" value="Sports">Sports</button>
+                            <a class="dropdown-item" href="#" id="1" value="Presidents">Presidents</button>
+                            <a class="dropdown-item" href="#" id="2" value="Jazz Greats">Jazz Greats</button>
+                            <a class="dropdown-item" href="#" id="3" value="Nature's Fury">Nature's Fury</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-sm">
+
+            <!-- hidden div to display user category selection -->
+            <div class="col-sm-5">
+                <div id="current-category"></div>
+            </div>
+                
+            <!-- the score cards (buttons) -->
+            <div class="col-sm-4" style="text-align:right;">
+                <button type="button" class="btn btn-info">
+                    <img src="assets/images/thumb-up.png" width="32px"> <span id="wins" class="badge badge-light">0</span>
+                </button>
+
+                <button type="button" class="btn btn-info">
+                    <img src="assets/images/thumb-down.png" width="32px"> <span id="losses" class="badge badge-light">0</span>
+                </button>
+            </div>
+
+            <!-- Empty div for displaying messages to the user -->
+            <div class="col-sm-3">
+                <h4 class="my-message" id="messages" style="text-align:center;"></h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- secret word and wrong guess boxes (col 9) -->
+    <div class="container" style="padding-top:20px">
+        <div class="row justify-content-sm-center">
+            <div class="col-md-9">
+                
+                <div class="secret-word-box">
+                    <h4>Your secret word</h4>
+                    <h3 id="right-text"></h3>
+                </div>
+
+                <div class="wrong-chars-box">
+                    <h4>Your wrong guesses</h4>
+                    <h3 id="wrong-text"></h3>
+                </div>
+            </div>
+
+            <!-- Hanging man image on the right side (col-3) -->
+            <div class="col-sm-3">
+                <div>
+                    <img src="assets/images/man_gray.png" style="height:auto;width:100%;" id="hanging-man">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- AUDIO TAG -->
+    <audio id="won-audio">
+        <source src="assets/images/Kids Cheering-SoundBible.com-681813822.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="lost-audio">
+        <source src="assets/images/Hl2_Rebel-Ragdoll485-573931361.mp3" type="audio/mpeg">
+    </audio>
+</div>
+
+<!-- JavaScript -->
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+    // VARIABLES ==========================
+
+    // STATIC ARRAYS
+    var sportsArray = ["curling","futsal","lawn_bowling","hang_gliding","ice_hockey","rock_climbing","cricket","wind surfing","cross country","lacrosse"];
+    var presidentsArray = ["barack_obama","abraham_lincoln","theodore_roosevelt","john_kennedy","george_washington","thomas_jefferson","harry_truman","james_monroe","andrew_jackson"];
+    var jazzGreatsArray = ["duke_ellington","john_coltrane","charlie_parker","thelonius_monk","dave_brubeck","bill_evans","oscar_peterson","louis_armstrong","art_tatum"];
+    var naturesFuryArray = ["hurricane","earthquake","typhoon","volcano","flash_flood","monsoon","blizzard","tornado","forest_fire"];
+    var categoryArray = [sportsArray,presidentsArray,jazzGreatsArray,naturesFuryArray];
+    var textArray = { "Sports":"0","Presidents":"1","Jazz Greats":"2","Nature's Fury":"3" };
+    var hangingManArray = ["man_gray.png","man_brace.png","man_head.png","man_body.png","man_one_arm.png","man_both_arms.png","man_one_leg.png","man_hung.png"]
+    var messagesArray = ["You got this!","What's that thing for?","Gulp!","You got the answer yet?","Oh jeez!","Mommy!","Any last wishes?","You're a goner!"]
+
+    // Variables keeping score when a game is won or lost
+    var wins = 0;
+    var losses = 0;
+    var wonFlag = false;
+    var lostFlag = false;
+
+    // vars and arrays for when category is selected
+    var secretWord = "";
+    var catText = "";
+    var catIndex = 0;
+    var displayString = "";
+    var displayArray = [];
+    var wordArray = [];
+
+    var guess = ""; // key user pressed
+    var wrongArray = []; //built as user presses wrong keys
+    var notit = 0; // keeps track of wrong guesses until game is won or lost
+
+    // var for displaying category secret word underscores
+    var rightText = "";
+
+    // folder path for scaffolding images
+    var img = "assets/images/";
+    var filepath = "";
+
+
+// FUNCTIONS ========================
+
+    // function to generate the random index number for the categoryArray item selected by the user
+    function makeSecretWord (catArray,index) {
+        randomIndex = catArray[index][Math.floor(Math.random() * catArray.length)];
+        return randomIndex;
+    }
+
+    // function to build the secret array to display the characters on the webpage
+    function makeSecretArray (secretArray,pageArray,myWord) {
+    for ( i = 0 ; i < myWord.length ; i++ ) {
+        secretArray.push(myWord.charAt(i));
+        pageArray.push("_");
+        }
+        return pageArray;
+    } // end makeSecretArray
+
+    // function to write the secretWord underscores to the Guess box               
+    function displaySecretUnderscores (secretArray) {
+        var rightText = document.getElementById("right-text");
+        var rightString = secretArray.join(" ");
+        rightText.textContent = rightString;
+    }
+
+    // function to build and compare user's guessed word to the secret word to determine if game is won
+    function makeSecretString (word) {
+        pageString = word.charAt(0);
+        for ( i = 1 ; i < word.length ; i++ ) {
+            pageString = pageString + " " + word.charAt(i);
+        }
+        return pageString;
+    }
+
+    // function to clear text inserted on the webpage and initialize specific vars to clear screen and continue
+    function initDisplay() {
+        $("#right-text").text("");
+        $("#wrong-text").text("");
+        $("#messages").text("");
+        $("#current-category").empty();
+        $("#hanging-man").attr("src","assets/images/man_gray.png");
+        wonFlag = false;
+        lostFlag = false;
+        displayArray = [];
+        wrongArray = [];
+        secretWord = "";
+        notit = 0;
+        }
+    
+    // function to play audio sound for winning or losing a game
+    var iWon = document.getElementById("won-audio");
+    var iLost = document.getElementById("lost-audio");
+    function playWonAudio() {
+        iWon.play();
+    }
+    function playLostAudio() {
+        iLost.play();
+    }
+
+
+// ================ CATEGORY BUTTON DROPDOWN CLICK EVENT
+
+    // select category
+    $(".dropdown-menu a").click(function() {
+
+        // initialize when category is selected
+        initDisplay();
+
+        // get category text and index from click event
+        catText = $(this).text();
+        catIndex = $(this).attr("id");
+        // write pulldown text and array index to #current-category and #user-select attribute
+        $("#current-category").html("<h4 id='user-select'>" + catText + "</h4>");
+        $("#user-select").attr("cat-index",catIndex);
+
+        // make secret word and add it to a new attribute at #user-select
+        secretWord = makeSecretWord (categoryArray,catIndex);
+        $("#user-select").attr("secret-word",secretWord);
+        // secretWord = $("#user-select").attr("secret-word"); // redundant, but used for testing
+
+    // BUILD SECRET STRING FOR DISPLAY ONSCREEN (with underscores)
+
+        // get secretWord from HTML attribute
+        secretWord = $("#user-select").attr("secret-word");
+        console.log(secretWord); // if you have to know
+        displayArray = makeSecretArray(wordArray,displayArray,secretWord);
+
+        // display initial word onscreen
+        displaySecretUnderscores(displayArray);
+
+    });  // end of click on categories event
+
+
+// ================ ONKEYUP EVENT CAPTURING USER CHARACTERS TYPED
+
+
+    document.onkeyup = function(event) {
+
+    // initialize variables
+
+        // don't allow input if there is no secretWord, i.e., was initialized after a game
+        if (secretWord.length < 1) {
+            alert("Please select a category for a new word.")
+        } else 
+        // else allow user key entry        
+        {
+            // assign the key pressed and initialize variables
+            guess = event.key;
+            gotit = 0;
+
+            // create the secret word string for the window
+            for ( i = 0 ; i < secretWord.length ; i++ ) {
+                if (secretWord.charAt(i) === guess ) {
+                    displayArray[i] = guess; 
+                    gotit++;
+                } // end if
+            } // end for
+
+            // if the character is not in the secret word and not in the wrongArray...
+            // add it to wrong guesses array for display in the window
+            if ( gotit < 1 && wrongArray.indexOf(guess) == -1 ) {
+                wrongArray.push(guess);
+                ++notit;
+                // a switch statement below to update the image and insert comments
+                switch(notit) {
+                    case 1:
+                        filepath = img + hangingManArray[1];
+                        $("#hanging-man").attr("src",filepath);
+                        $("#messages").text(messagesArray[1]);
+                    break;
+                    case 2:
+                        filepath = img + hangingManArray[2];
+                        $("#hanging-man").attr("src",img + hangingManArray[2]);
+                        $("#messages").text(messagesArray[2]);
+                    break;
+                    case 3:
+                        filepath = img + hangingManArray[3];
+                        $("#hanging-man").attr("src",img + hangingManArray[3]);
+                        $("#messages").text(messagesArray[3]);
+                    break;
+                    case 4:
+                        filepath = img + hangingManArray[4];
+                        $("#hanging-man").attr("src",img + hangingManArray[4]);
+                        $("#messages").text(messagesArray[4]);
+                    break;
+                    case 5:
+                        filepath = img + hangingManArray[5];
+                        $("#hanging-man").attr("src",img + hangingManArray[5]);
+                        $("#messages").text(messagesArray[5]);
+                    break;
+                    case 6:
+                        filepath = img + hangingManArray[6];
+                        $("#hanging-man").attr("src",img + hangingManArray[6]);
+                        $("#messages").text(messagesArray[6]);
+                    break;
+                    case 7:
+                        filepath = img + hangingManArray[7];
+                        $("#hanging-man").attr("src",img + hangingManArray[7]);
+                        $("#messages").text(messagesArray[7]);
+                        losses++;
+                        notit = 0;
+                        $("#losses").text(losses);
+                        lostFlag = true;
+                    break;
+                    default: 
+                        filepath = img + hangingManArray[7];
+                        $("#hanging-man").attr("src",img + hangingManArray[0]);
+                        $("#messages").text(messagesArray[7]);
+                        notit = 0;
+                } // end switch
+            } // end notit if
+
+            // DISPLAY CHARACTER ON PAGE - EITHER RIGHT OR WRONG                    
+            // set vars for document.GetElementById
+            var rightText = document.getElementById("right-text");
+            var wrongText = document.getElementById("wrong-text");
+
+            // join the arrays to display in the document
+            var rightString = displayArray.join(" ");
+            var wrongString = wrongArray.join(" ");
+
+            // generate the text and pass to the HTML page
+            rightText.textContent = rightString;
+            wrongText.textContent = wrongString;
+
+            //check if the onscreen word matches the correct one and user wins
+            var secretDisplay = makeSecretString(secretWord);
+            var userDisplay = $("#right-text").text();
+            // play audio if user wins
+            if ( userDisplay === secretDisplay ) {
+                wins++;
+                wonFlag = true;
+                $("#wins").text(wins);
+                playWonAudio();
+                initDisplay();
+            } // end if
+
+            // play audio file if game was lost
+            if (lostFlag === true) {
+                playLostAudio();
+                initDisplay();
+            }
+        } // end if secretWord
+    } // end of onkeyup function
+}); // end of document.ready
+
+</script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</body>
+</html>
