@@ -150,7 +150,7 @@ $(document).ready(function() {
 
     // function to generate the random index number for the categoryArray item selected by the user
     function makeSecretWord (catArray,index) {
-        randomIndex = catArray[index][Math.floor(Math.random() * catArray.length)];
+        randomIndex = catArray[index][Math.floor(Math.random() * catArray[index].length)];
         return randomIndex;
     }
 
