@@ -8,30 +8,24 @@ $(document).ready(function() {
     var jazzGreatsArray = ["duke_ellington","john_coltrane","charlie_parker","thelonius_monk","dave_brubeck","bill_evans","oscar_peterson","louis_armstrong","art_tatum"];
     var naturesFuryArray = ["hurricane","earthquake","typhoon","volcano","flash_flood","monsoon","blizzard","tornado","forest_fire"];
     var categoryArray = [sportsArray,presidentsArray,jazzGreatsArray,naturesFuryArray];
-    var textArray = { "Sports":"0","Presidents":"1","Jazz Greats":"2","Nature's Fury":"3" };
     var hangingManArray = ["man_gray.png","man_brace.png","man_head.png","man_body.png","man_one_arm.png","man_both_arms.png","man_one_leg.png","man_hung.png"]
     var messagesArray = ["You got this!","What's that thing for?","Gulp!","You got the answer yet?","Oh jeez!","Mommy!","Any last wishes?","You're a goner!"]
 
     // Variables keeping score when a game is won or lost
     var wins = 0;
     var losses = 0;
-    var wonFlag = false;
     var lostFlag = false;
 
     // vars and arrays for when category is selected
     var secretWord = "";
     var catText = "";
     var catIndex = 0;
-    var displayString = "";
     var displayArray = [];
     var wordArray = [];
 
     var guess = ""; // key user pressed
     var wrongArray = []; //built as user presses wrong keys
     var notit = 0; // keeps track of wrong guesses until game is won or lost
-
-    // var for displaying category secret word underscores
-    var rightText = "";
 
     // folder path for scaffolding images
     var img = "assets/images/";
